@@ -31,13 +31,34 @@ Draft plan:
 Configuration
 =============
 
-Configuration
+The configuration tells the SOME/IP communication stack which services it should provide and which services it should require on the network.
+The configuration contains SOME/IP-SD settings and IP interface bindings.
+
+Configuration is provided as ``json`` files and read at startup.
 
 Provided services
 =================
 
+Services available in the local ECU / VM are offered by the SOME/IP gateway once they become internally available and are present in the configuration.
+This is done by sending an OfferService message to the SOME/IP network.
+
+Once the service ceased to exist the SOME/IP communication stack sends a StopOfferService message to the SOME/IP network.
+
+For IPC service discovery the features of lola are used by the SOME/IP gateway.
+
+TODO: Does lola inform us that a service is stopped?
+
 Required services
 =================
 
+For configured required services, the SOME/IP communication stack will send a FindService message to the SOME/IP network.
+
+TODO: Might not be needed, if OfferService messages for that services have been already received.
+
+Upon reception of a OfferService message, the SOME/IP communication stack creates a connection and provides the service in the VM.
+
 FindService
 ================
+
+Upon reception of a FindService message, the SOME/IP communication stack checks if the service is available locally and has been configured as provided service.
+If both questions are answered positively, the SOME/IP communication stack sends a ServiceFound message to the sender of the FindService message.
