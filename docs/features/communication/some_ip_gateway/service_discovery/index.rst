@@ -36,6 +36,8 @@ The configuration contains SOME/IP-SD settings and IP interface bindings.
 
 Configuration is provided as ``json`` files and read at startup.
 
+TODO: is ``json`` a problem?
+
 Provided services
 =================
 
@@ -53,7 +55,7 @@ Required services
 
 For configured required services, the SOME/IP communication stack will send a FindService message to the SOME/IP network.
 
-TODO: Might not be needed, if OfferService messages for that services have been already received.
+FindService message might not be needed, if OfferService messages for that services have been already received.
 
 Upon reception of a OfferService message, the SOME/IP communication stack creates a connection and provides the service in the VM.
 
