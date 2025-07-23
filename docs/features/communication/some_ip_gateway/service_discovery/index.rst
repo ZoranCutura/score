@@ -22,17 +22,19 @@ Abstract
 
 Draft plan:
 
-- provided / required services must be configured
-- provided services are discovered via lola and then Offer message is sent according to configuration
+- provided / required services (including their service elements like events, methods, and fields) must be configured
+- (locally) provided services are discovered (locally) via lola and then offered on the network by sending a SOME/IP-SD message with an OfferService entry according to configuration
 - required services may trigger sending a FindService message
-- When a FindService message is received, the SOME/IP checks if it can find the service locally via lola and when found responds
+- When a SOME/IP-SD message containing a FindService entry is received, the SOME/IP gateway checks this service has been already offered locally via lola
+ - If this is the case, the SOME/IP gateway answers with a SOME/IP-SD message containing a corresponding OfferService entry
+ - Otherwise, the SOME/IP gateway initiates a local service discovery via lola. - Once this is successful, he SOME/IP gateway answers with a SOME/IP-SD message containing a corresponding OfferService entry
   - this will not trigger creation of the service internally
 
 Configuration
 =============
 
 The configuration tells the SOME/IP communication stack which services it should provide and which services it should require on the network.
-The configuration contains SOME/IP-SD settings and IP interface bindings.
+The configuration contains SOME/IP and SOME/IP-SD settings as well as IP interface bindings.
 
 Configuration is provided as ``json`` files and read at startup.
 
@@ -42,8 +44,8 @@ Provided services
 =================
 
 Services available in the local ECU / VM are offered by the SOME/IP gateway once they become internally available and are present in the configuration.
-This is done by sending an OfferService message to the SOME/IP network.
-
+This is done by sending an SOME/IP-SD messages containing an OfferService entry to the network.
+As long as the service is locally available the service offering is periodically (according to the configuration) renewed by sending a SOME/IP-SD messages containing an OfferService entry to the network.
 Once the service ceased to exist the SOME/IP communication stack sends a StopOfferService message to the SOME/IP network.
 
 For IPC service discovery the features of lola are used by the SOME/IP gateway.
