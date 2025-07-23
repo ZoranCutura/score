@@ -46,7 +46,7 @@ Provided services
 Services available in the local ECU / VM are offered by the SOME/IP gateway once they become internally available and are present in the configuration.
 This is done by sending an SOME/IP-SD messages containing an OfferService entry to the network.
 As long as the service is locally available the service offering is periodically (according to the configuration) renewed by sending a SOME/IP-SD messages containing an OfferService entry to the network.
-Once the service ceased to exist the SOME/IP communication stack sends a StopOfferService message to the SOME/IP network.
+Once the service ceased to exist locally, the SOME/IP communication stack sends a SOME/IP-SD message containing a StopOfferService entry to the network.
 
 For IPC service discovery the features of lola are used by the SOME/IP gateway.
 
@@ -55,14 +55,21 @@ TODO: Does lola inform us that a service is stopped?
 Required services
 =================
 
-For configured required services, the SOME/IP communication stack will send a FindService message to the SOME/IP network.
+For configured required services, the SOME/IP communication stack will send a SOME/IP-SD message containing a FindService entry to the network.
 
 FindService message might not be needed, if OfferService messages for that services have been already received.
 
-Upon reception of a OfferService message, the SOME/IP communication stack creates a connection and provides the service in the VM.
+Upon initial reception of a SOME/IP-SD message containing an OfferService entry, the SOME/IP communication stack checks if the service has been configured as required service.
+If so, the SOME/IP communication stack offers the service locally in the ECU / VM.
+Here, initial reception is the first reception after a previous service loss or withdrawal, i.e.,
+
+- after the reception of a SOME/IP-SD message containing an StopOfferService entry
+- after a TTL expiry of the previous OfferService entry
+- after the detection of a reboot of the (remote) service provider
+- after a link-down/link-up event
 
 FindService
 ================
 
-Upon reception of a FindService message, the SOME/IP communication stack checks if the service is available locally and has been configured as provided service.
-If both questions are answered positively, the SOME/IP communication stack sends a ServiceFound message to the sender of the FindService message.
+Upon reception of a SOME/IP-SD message containing a FindService entry, the SOME/IP communication stack checks if the service is available locally and has been configured as provided service.
+If both questions are answered positively, the SOME/IP communication stack responds by sending a SOME/IP-SD message containing an OfferService to the sender of the SOME/IP-SD message containing a FindService entry.
