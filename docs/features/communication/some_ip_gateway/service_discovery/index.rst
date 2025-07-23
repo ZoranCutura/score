@@ -26,8 +26,10 @@ Draft plan:
 - (locally) provided services are discovered (locally) via lola and then offered on the network by sending a SOME/IP-SD message with an OfferService entry according to configuration
 - required services may trigger sending a FindService message
 - When a SOME/IP-SD message containing a FindService entry is received, the SOME/IP gateway checks this service has been already offered locally via lola
+
  - If this is the case, the SOME/IP gateway answers with a SOME/IP-SD message containing a corresponding OfferService entry
  - Otherwise, the SOME/IP gateway initiates a local service discovery via lola. - Once this is successful, he SOME/IP gateway answers with a SOME/IP-SD message containing a corresponding OfferService entry
+
   - this will not trigger creation of the service internally
 
 Configuration
