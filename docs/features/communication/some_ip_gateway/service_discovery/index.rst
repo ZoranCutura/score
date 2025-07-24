@@ -24,7 +24,7 @@ Draft plan:
 
 - provided / required services (including their service elements like events, methods, and fields) must be configured
 - (locally) provided services are discovered (locally) via lola and then offered on the network by sending a SOME/IP-SD message with an OfferService entry according to configuration
-- required services may trigger sending a FindService message
+- (locally) required services may trigger the discovery on the network by sending of a SOME/IP-SD message with a FindService entry
 - When a SOME/IP-SD message containing a FindService entry is received, the SOME/IP gateway checks this service has been already offered locally via lola
 
  - If this is the case, the SOME/IP gateway answers with a SOME/IP-SD message containing a corresponding OfferService entry
