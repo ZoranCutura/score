@@ -32,6 +32,8 @@ Draft plan:
 
   - this will not trigger creation of the service internally
 
+TODO: show how services from the network are presented to the local system
+
 Configuration
 =============
 
@@ -52,6 +54,34 @@ Once the service ceased to exist locally, the SOME/IP communication stack sends 
 
 For IPC service discovery the features of lola are used by the SOME/IP gateway.
 
+.. uml::
+   :alt: Gateway offers a service to the network
+
+   @startuml
+   participant "IPC_client" as IPC_client
+   participant "Service\nvia IPC" as Service
+   participant "SOME/IP Gateway" as Someipgateway
+   actor "Network" as Network
+
+   IPC_client -> Service ** : create()
+   Someipgateway -> Service: service_discovery()
+   Someipgateway -> Network: OfferService
+   @enduml
+
+.. uml::
+   :alt: Gateway stops service offer
+
+   @startuml
+   participant "IPC_client" as IPC_client
+   participant "Service\nvia IPC" as Service
+   participant "SOME/IP Gateway" as Someipgateway
+   actor "Network" as Network
+
+   IPC_client -> Service !! : delete()
+   Someipgateway -> Service: service_discovery()
+   Someipgateway -> Network: StopOfferService
+   @enduml
+
 TODO: Does lola inform us that a service is stopped?
 
 Required services
@@ -70,8 +100,67 @@ Here, initial reception is the first reception after a previous service loss or 
 - after the detection of a reboot of the (remote) service provider
 - after a link-down/link-up event
 
+.. uml::
+   :alt: Gateway receives OfferService from the network
+
+   @startuml
+   actor "Network" as Network
+   participant "SOME/IP Gateway" as Someipgateway
+   participant "Service\nvia IPC" as Service
+   participant "IPC_client" as IPC_client
+
+   Network -> Someipgateway: OfferService
+   Someipgateway -> Service ** : create()
+   IPC_client -> Service: service_discovery()
+   IPC_client -> Service: connect()
+   @enduml
+
+.. uml::
+   :alt: Gateway receives StopOfferService from the network
+
+   @startuml
+   actor "Network" as Network
+   participant "SOME/IP Gateway" as Someipgateway
+   participant "Service" as Service
+   participant "IPC_client" as IPC_client
+
+   Network -> Someipgateway: StopOfferService
+   Someipgateway -> Service !! : delete()
+   IPC_client -> Service: service_discovery()
+   IPC_client -> IPC_client: handle_disconnect()
+   @enduml
+
 FindService
 ================
 
 Upon reception of a SOME/IP-SD message containing a FindService entry, the SOME/IP communication stack checks if the service is available locally and has been configured as provided service.
 If both questions are answered positively, the SOME/IP communication stack responds by sending a SOME/IP-SD message containing an OfferService to the sender of the SOME/IP-SD message containing a FindService entry.
+
+.. uml::
+   :alt: Gateway receives FindService from the network
+
+   @startuml
+   actor "Network" as Network
+   participant "SOME/IP Gateway" as Someipgateway
+   participant "Service\nvia IPC" as Service
+
+   Network -> Someipgateway: FindService
+   Someipgateway -> Service: service_discovery()
+   alt Service available
+       Someipgateway -> Network: OfferService
+   end
+   @enduml
+
+.. uml::
+   :alt: Gateway sends FindService to the network
+
+   @startuml
+   actor "Network" as Network
+   participant "SOME/IP Gateway" as Someipgateway
+
+   loop required Service
+      alt no OfferService received
+         Someipgateway -> Network: FindService
+      end
+   end
+   @enduml
