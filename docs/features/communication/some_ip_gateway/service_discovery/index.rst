@@ -32,17 +32,14 @@ Draft plan:
 
   - this will not trigger creation of the service internally
 
-TODO: show how services from the network are presented to the local system
-
 Configuration
 =============
 
 The configuration tells the SOME/IP communication stack which services it should provide and which services it should require on the network.
 The configuration contains SOME/IP and SOME/IP-SD settings as well as IP interface bindings.
 
-Configuration is provided as ``json`` files and read at startup.
-
-TODO: is ``json`` a problem? Examples also read `json` at startup.
+The integrator must be able to change configuration at runtime deployment.
+Thus it is likely read from one or multiple files.
 
 Provided services
 =================
@@ -58,26 +55,29 @@ For IPC service discovery the features of lola are used by the SOME/IP gateway.
    :alt: Gateway offers a service to the network
 
    @startuml
-   participant "IPC_client" as IPC_client
+   participant "Producer" as IPC_client
    participant "Service\nvia IPC" as Service
    participant "SOME/IP Gateway" as Someipgateway
    actor "Network" as Network
 
    IPC_client -> Service ** : create()
+   IPC_client -> Service : OfferService()
    Someipgateway -> Service: service_discovery()
    Someipgateway -> Network: OfferService
+   Network -> Someipgateway: SubscribeEventgroup
+   Someipgateway -> Someipgateway: create_proxy()
    @enduml
 
 .. uml::
    :alt: Gateway stops service offer
 
    @startuml
-   participant "IPC_client" as IPC_client
+   participant "Producer" as IPC_client
    participant "Service\nvia IPC" as Service
    participant "SOME/IP Gateway" as Someipgateway
    actor "Network" as Network
 
-   IPC_client -> Service !! : delete()
+   IPC_client -> Service : StopOfferService()
    Someipgateway -> Service: service_discovery()
    Someipgateway -> Network: StopOfferService
    @enduml
@@ -107,13 +107,20 @@ Here, initial reception is the first reception after a previous service loss or 
    actor "Network" as Network
    participant "SOME/IP Gateway" as Someipgateway
    participant "Service\nvia IPC" as Service
-   participant "IPC_client" as IPC_client
+   participant "Consumer" as IPC_client
 
    Network -> Someipgateway: OfferService
    Someipgateway -> Service ** : create()
+   Someipgateway -> Service: OfferService()
    IPC_client -> Service: service_discovery()
    IPC_client -> Service: connect()
    @enduml
+
+.. note::
+   The SOME/IP Gateway can create the service before receiving an OfferService,
+   but can only start offering it after having received an OfferService message from the network.
+   This behavior may reduce the time until the service is available for consumers, but may increase boot time.
+   Thus the decision is to create the service only after having received an OfferService message from the network.
 
 .. uml::
    :alt: Gateway receives StopOfferService from the network
@@ -121,14 +128,20 @@ Here, initial reception is the first reception after a previous service loss or 
    @startuml
    actor "Network" as Network
    participant "SOME/IP Gateway" as Someipgateway
-   participant "Service" as Service
-   participant "IPC_client" as IPC_client
+   participant "Service\nvia IPC" as Service
+   participant "Consumer" as IPC_client
 
    Network -> Someipgateway: StopOfferService
-   Someipgateway -> Service !! : delete()
+   Someipgateway -> Service: StopOfferService()
    IPC_client -> Service: service_discovery()
    IPC_client -> IPC_client: handle_disconnect()
    @enduml
+
+.. note::
+   If the service times out we may internally stop the service, but keep it alive until another timeout is reached.
+   The intention is to avoid destroying and recreating the service repeatedly.
+
+   TODO: is this optimization for a rare case and worth the complexity?
 
 FindService
 ================
