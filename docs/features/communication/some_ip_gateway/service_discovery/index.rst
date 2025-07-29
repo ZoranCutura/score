@@ -17,26 +17,20 @@
 SOME/IP-Gateway Service Discovery
 #################################
 
-Abstract
-========
-
-Draft plan:
+Service discovery deals with discovery and connection setup of services.
+The basic summary of service discovery is as follows:
 
 - provided / required services (including their service elements like events, methods, and fields) must be configured
-- (locally) provided services are discovered (locally) via lola and then offered on the network by sending a SOME/IP-SD message with an OfferService entry according to configuration
+- (locally) provided services are discovered (locally) via IPC and then offered on the network by sending a SOME/IP-SD message with an OfferService entry according to configuration
 - (locally) required services may trigger the discovery on the network by sending of a SOME/IP-SD message with a FindService entry
-- When a SOME/IP-SD message containing a FindService entry is received, the SOME/IP gateway checks this service has been already offered locally via lola
-
- - If this is the case, the SOME/IP gateway answers with a SOME/IP-SD message containing a corresponding OfferService entry
- - Otherwise, the SOME/IP gateway initiates a local service discovery via lola. - Once this is successful, he SOME/IP gateway answers with a SOME/IP-SD message containing a corresponding OfferService entry
-
-  - this will not trigger creation of the service internally
+- when a SOME/IP-SD message containing a FindService entry is received, the SOME/IP gateway checks this service has been already offered locally via IPC
 
 Configuration
 =============
 
 The configuration tells the SOME/IP communication stack which services it should provide and which services it should require on the network.
 The configuration contains SOME/IP and SOME/IP-SD settings as well as IP interface bindings.
+Events, methods and fields are configured as well.
 
 The integrator must be able to change configuration at runtime deployment.
 Thus it is likely read from one or multiple files.
@@ -148,6 +142,9 @@ FindService
 
 Upon reception of a SOME/IP-SD message containing a FindService entry, the SOME/IP communication stack checks if the service is available locally and has been configured as provided service.
 If both questions are answered positively, the SOME/IP communication stack responds by sending a SOME/IP-SD message containing an OfferService to the sender of the SOME/IP-SD message containing a FindService entry.
+
+This will **not** trigger creation of the service internally by any means.
+Only lookup of running services is done.
 
 .. uml::
    :alt: Gateway receives FindService from the network
