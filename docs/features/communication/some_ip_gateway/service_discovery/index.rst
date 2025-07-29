@@ -42,7 +42,7 @@ The configuration contains SOME/IP and SOME/IP-SD settings as well as IP interfa
 
 Configuration is provided as ``json`` files and read at startup.
 
-TODO: is ``json`` a problem?
+TODO: is ``json`` a problem? Examples also read `json` at startup.
 
 Provided services
 =================
@@ -82,7 +82,7 @@ For IPC service discovery the features of lola are used by the SOME/IP gateway.
    Someipgateway -> Network: StopOfferService
    @enduml
 
-TODO: Does lola inform us that a service is stopped?
+.. note:: ``mw::com::<Proxy>::StartFindService()`` function can tell us that a service is offered or stopped. But using it is awkward / complicated.
 
 Required services
 =================
