@@ -24,6 +24,7 @@ The basic summary of service discovery is as follows:
 - (locally) provided services are discovered (locally) via IPC and then offered on the network by sending a SOME/IP-SD message with an OfferService entry according to configuration
 - (locally) required services may trigger the discovery on the network by sending of a SOME/IP-SD message with a FindService entry
 - when a SOME/IP-SD message containing a FindService entry is received, the SOME/IP gateway checks this service has been already offered locally via IPC
+- for IPC service discovery the features of lola are used by the SOME/IP gateway
 
 Configuration
 =============
@@ -41,9 +42,6 @@ Provided services
 Services available in the local ECU / VM are offered by the SOME/IP gateway once they become internally available and are present in the configuration.
 This is done by sending an SOME/IP-SD messages containing an OfferService entry to the network.
 As long as the service is locally available the service offering is periodically (according to the configuration) renewed by sending a SOME/IP-SD messages containing an OfferService entry to the network.
-Once the service ceased to exist locally, the SOME/IP communication stack sends a SOME/IP-SD message containing a StopOfferService entry to the network.
-
-For IPC service discovery the features of lola are used by the SOME/IP gateway.
 
 .. uml::
    :alt: Gateway offers a service to the network
@@ -61,6 +59,8 @@ For IPC service discovery the features of lola are used by the SOME/IP gateway.
    Network -> Someipgateway: SubscribeEventgroup
    Someipgateway -> Someipgateway: create_proxy()
    @enduml
+
+Once the service ceased to exist locally, the SOME/IP communication stack sends a SOME/IP-SD message containing a StopOfferService entry to the network.
 
 .. uml::
    :alt: Gateway stops service offer
@@ -111,10 +111,12 @@ Here, initial reception is the first reception after a previous service loss or 
    @enduml
 
 .. note::
-   The SOME/IP Gateway can create the service before receiving an OfferService,
+   The SOME/IP communication stack can create the service before receiving an OfferService,
    but can only start offering it after having received an OfferService message from the network.
    This behavior may reduce the time until the service is available for consumers, but may increase boot time.
    Thus the decision is to create the service only after having received an OfferService message from the network.
+
+Upon reception of SOME/IP-SD message containing an StopOfferService entry, the SOME/IP communication stack stops the proxy service offered via IPC as well.
 
 .. uml::
    :alt: Gateway receives StopOfferService from the network
@@ -160,6 +162,8 @@ Only lookup of running services is done.
        Someipgateway -> Network: OfferService
    end
    @enduml
+
+If an service is configured to be needed and no OfferService has been received yet, the SOME/IP communication stack may send a SOME/IP-SD message containing a FindService entry.
 
 .. uml::
    :alt: Gateway sends FindService to the network
